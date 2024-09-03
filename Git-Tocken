@@ -1,1 +1,50 @@
 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
+
+
+
+
+
+
+
+
+
+
+name: Deploy to On-Premise Server
+
+on:
+  push:
+    branches:
+      - Staging
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Check Server Connectivity
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: |
+          sshpass -p "$PASSWORD" ssh -p 5001 -o StrictHostKeyChecking=no "$USERNAME"@125.18.168.34 "
+            hostname &&
+            ifconfig &&
+            pwd
+          "
+
+      - name: Deploy Rails Application
+        env:
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+        run: |
+          sshpass -p "$PASSWORD" ssh -p 5001 -o StrictHostKeyChecking=no "$USERNAME"@125.18.168.34 "
+            cd /home/server/SERVERS/memo_coin/ &&
+            git pull origin Staging &&
+            bash STARTSERVER.sh
+          "
